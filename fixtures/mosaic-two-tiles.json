@@ -1,0 +1,1 @@
+{"kind":"mosaic","id":"mosaic-req-east-1","block_id":"block-east","seq":1,"publisher":"duty-room-a","params":{"order":"tile_id","columns":["hot_pixels","cloud_pixels"]},"tiles":["tile-east-1","tile-east-2"]}

@@ -20,11 +20,15 @@ CREATE TABLE IF NOT EXISTS challenge_state(challenge_id TEXT PRIMARY KEY,request
 CREATE TABLE IF NOT EXISTS access_state(request_id TEXT PRIMARY KEY,status TEXT NOT NULL,reason TEXT NOT NULL,version INTEGER NOT NULL);
 CREATE TABLE IF NOT EXISTS decision_log(id INTEGER PRIMARY KEY,system TEXT NOT NULL,object_id TEXT NOT NULL,status TEXT NOT NULL,reason TEXT NOT NULL,source_id TEXT NOT NULL,at TEXT DEFAULT CURRENT_TIMESTAMP);
 CREATE TABLE IF NOT EXISTS tile_capture(source_id TEXT PRIMARY KEY REFERENCES source(id),track_id TEXT NOT NULL,block_hint TEXT NOT NULL,captured_at TEXT NOT NULL,hot_pixels INTEGER NOT NULL,cloud_pixels INTEGER NOT NULL);
+CREATE TABLE IF NOT EXISTS mosaic_build(build_id TEXT PRIMARY KEY,block_id TEXT NOT NULL,params TEXT NOT NULL,params_sha TEXT NOT NULL,tile_ids TEXT NOT NULL,tile_shas TEXT NOT NULL,matrix_sha TEXT NOT NULL,manifest_sha TEXT NOT NULL,rows INTEGER NOT NULL,cols INTEGER NOT NULL,created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);
+CREATE TABLE IF NOT EXISTS mosaic_publish(block_id TEXT NOT NULL,seq INTEGER NOT NULL,build_id TEXT NOT NULL REFERENCES mosaic_build(build_id),intent_id TEXT NOT NULL UNIQUE,publisher TEXT NOT NULL,state TEXT NOT NULL,prepared_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,confirmed_at TEXT,PRIMARY KEY(block_id,seq));
+CREATE TABLE IF NOT EXISTS mosaic_current(block_id TEXT PRIMARY KEY,seq INTEGER NOT NULL,build_id TEXT NOT NULL REFERENCES mosaic_build(build_id));
+CREATE TABLE IF NOT EXISTS mosaic_meta(key TEXT PRIMARY KEY,value TEXT NOT NULL);
 '''
 
 def connect(path):
     target=Path(path);target.parent.mkdir(parents=True,exist_ok=True)
-    db=sqlite3.connect(target);db.row_factory=sqlite3.Row;db.executescript(SCHEMA);return db
+    db=sqlite3.connect(target);db.row_factory=sqlite3.Row;db.execute('PRAGMA busy_timeout=5000');db.executescript(SCHEMA);return db
 
 def source(db,file,kind):
     raw=Path(file).read_bytes();doc=json.loads(raw);digest=hashlib.sha256(raw).hexdigest()
@@ -48,4 +52,7 @@ def report(db_path):
           'fires':'SELECT * FROM fire_state ORDER BY event_id','shifts':'SELECT * FROM patrol_shift ORDER BY id','access':'SELECT * FROM access_state ORDER BY request_id',
           'rechecks':'SELECT * FROM access_recheck ORDER BY source_id','challenges':'SELECT * FROM field_challenge ORDER BY source_id','challenge_states':'SELECT * FROM challenge_state ORDER BY challenge_id',
           'decisions':'SELECT * FROM decision_log ORDER BY id',
-          'tiles':'SELECT * FROM tile_capture ORDER BY source_id'}.items()}
+          'tiles':'SELECT * FROM tile_capture ORDER BY source_id',
+          'mosaic_builds':'SELECT * FROM mosaic_build ORDER BY build_id',
+          'mosaic_publishes':'SELECT * FROM mosaic_publish ORDER BY block_id, seq',
+          'mosaic_current':"SELECT c.block_id,c.seq,c.build_id,b.matrix_sha,b.manifest_sha,b.params_sha,b.tile_ids,b.tile_shas,b.rows,b.cols,'published/artifact-'||b.matrix_sha||'.mosaic' AS artifact,'published/manifest-'||b.manifest_sha||'.json' AS manifest FROM mosaic_current c JOIN mosaic_build b ON b.build_id=c.build_id ORDER BY c.block_id"}.items()}
