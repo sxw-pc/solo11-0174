@@ -6,6 +6,7 @@ from .store import connect,report
 from .risk import import_risk,import_station,revoke_station,import_sample
 from .patrol import import_patrol,import_shift
 from .access import import_access,recheck_access,import_field_challenge
+from .hotspot import import_tile
 
 def audit(db_path):
     with closing(connect(db_path)) as db:
@@ -17,8 +18,8 @@ def audit(db_path):
         rebuilt=Path(folder)/'replay.sqlite'
         for i,item in enumerate(sources):
             file=Path(folder)/f'{i}.json';file.write_bytes(item['raw'])
-            {'station':import_station,'station_revoke':revoke_station,'risk':import_risk,'sample':import_sample,'shift':import_shift,'patrol':import_patrol,'access':import_access,'recheck':recheck_access,'field_challenge':import_field_challenge}[item['kind']](rebuilt,file)
+            {'station':import_station,'station_revoke':revoke_station,'risk':import_risk,'sample':import_sample,'shift':import_shift,'patrol':import_patrol,'access':import_access,'recheck':recheck_access,'field_challenge':import_field_challenge,'tile':import_tile}[item['kind']](rebuilt,file)
         replay=report(rebuilt)
-    fields=('blocks','stations','risk','samples','conflicts','shifts','fires','access','rechecks','challenges','challenge_states')
+    fields=('blocks','stations','risk','samples','conflicts','shifts','fires','access','rechecks','challenges','challenge_states','tiles')
     return {'status':'matched' if all(original[k]==replay[k] for k in fields) else 'divergent',
             'source_count':len(sources),'differences':[k for k in fields if original[k]!=replay[k]]}
