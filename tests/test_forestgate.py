@@ -19,7 +19,7 @@ def risk(id='r1',level='low',seq=1,**changes):
     result=dict(id=id,kind='risk',block_id='B1',area='north',station='S1',cert_id='S1-C1',observed_at='2026-11-01T08:00:00Z',seq=seq,level=level,station_valid=True,dry_a=35,dry_b=36,sample_a='A',sample_b='B');result.update(changes);return result
 
 def patrol(id,kind,event='F1',**changes):
-    result=dict(id=id,kind='patrol',block_id='B1',area='north',event_id=event,action=kind,actor='guard-a',witness='guard-b',at='2026-11-01T10:00:00Z');result.update(changes);return result
+    result=dict(id=id,kind='patrol',block_id='B1',area='north',segment='north-road',event_id=event,action=kind,actor='guard-a',witness='guard-b',at='2026-11-01T10:00:00Z');result.update(changes);return result
 
 def import_patrol(db,file):
     doc=json.loads(file.read_text(encoding='utf8'))
@@ -220,6 +220,16 @@ def test_route_must_reach_declared_block(tmp_path):
     with pytest.raises(ValueError,match='route_outside_block'):
         import_access(db,fixture(tmp_path,'wrong-route.json',access(route='south-road')))
     assert report(db)['access']==[]
+
+
+def test_fire_segment_suspends_only_affected_route(tmp_path):
+    db=tmp_path/'x.db';import_risk(db,fixture(tmp_path,'risk.json',risk()))
+    import_access(db,fixture(tmp_path,'road.json',access(route='north-road')))
+    import_access(db,fixture(tmp_path,'ridge.json',access(id='a2',request_id='P2',route='north-ridge')))
+    import_patrol(db,fixture(tmp_path,'sighting.json',patrol('p1','sighting',segment='north-road')))
+    states={x['request_id']:x['status'] for x in report(db)['access']}
+    assert states=={'P1':'suspended','P2':'granted'}
+    assert audit(db)['status']=='matched'
 
 
 def test_reopen_requires_prior_independent_close(tmp_path):

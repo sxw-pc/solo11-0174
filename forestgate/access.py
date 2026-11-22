@@ -3,10 +3,10 @@ from contextlib import closing
 
 def recalc_access(db,block_id,source_id):
     block=db.execute('SELECT * FROM forest_block WHERE id=?',(block_id,)).fetchone()
-    active=db.execute("SELECT COUNT(*) FROM fire_state WHERE block_id=? AND status='active'",(block_id,)).fetchone()[0]
+    active=db.execute("SELECT segment FROM fire_state WHERE block_id=? AND status='active'",(block_id,)).fetchall()
     for request in db.execute('SELECT * FROM access_request WHERE block_id=?',(block_id,)).fetchall():
         if block['current_risk']=='unknown':status,reason='held','risk_untrusted'
-        elif active:status,reason='suspended','active_fire'
+        elif any(fire['segment']==request['route'] for fire in active):status,reason='suspended','active_fire'
         elif block['current_risk']=='high':status,reason='suspended','high_fire_risk'
         elif db.execute("SELECT 1 FROM decision_log WHERE system='access' AND object_id=? AND reason='high_fire_risk'",(request['request_id'],)).fetchone() and not db.execute('SELECT 1 FROM access_recheck WHERE request_id=?',(request['request_id'],)).fetchone():
             status,reason='held','recheck_after_risk_downgrade'
@@ -24,7 +24,7 @@ def import_access(db_path,file):
         if not fresh:return {'id':doc['id'],'replayed':True}
         if not db.execute('SELECT 1 FROM forest_block WHERE id=?',(doc['block_id'],)).fetchone():raise ValueError('unknown_block')
         area=db.execute('SELECT area FROM forest_block WHERE id=?',(doc['block_id'],)).fetchone()['area']
-        if area not in doc['route']:raise ValueError('route_outside_block')
+        if not doc['route'].startswith(area+'-'):raise ValueError('route_outside_block')
         if doc['work_type'] not in ('hot','cold') or doc['start_at']>=doc['end_at'] or not doc['route']:
             raise ValueError('access_fields')
         if db.execute('SELECT 1 FROM access_request WHERE request_id=?',(doc['request_id'],)).fetchone():raise ValueError('request_id_conflict')
