@@ -1,0 +1,13 @@
+[
+  {"kind": "wildlife_camera", "id": "camera-C1", "camera_id": "C1", "block_id": "B1", "x_km": 0, "y_km": 0, "coverage_km": 0.05},
+  {"kind": "wildlife_camera", "id": "camera-C2", "camera_id": "C2", "block_id": "B1", "x_km": 2, "y_km": 0, "coverage_km": 0.05},
+  {"kind": "wildlife_camera", "id": "camera-C3", "camera_id": "C3", "block_id": "B1", "x_km": 50, "y_km": 0, "coverage_km": 0.05},
+  {"kind": "wildlife_clock", "id": "clock-C1-boot-1", "camera_id": "C1", "session": "boot-1", "offset_lo_s": -60, "offset_hi_s": 60},
+  {"kind": "wildlife_clock", "id": "clock-C2-boot-1", "camera_id": "C2", "session": "boot-1", "offset_lo_s": -60, "offset_hi_s": 60},
+  {"kind": "wildlife_clock", "id": "clock-C3-boot-1", "camera_id": "C3", "session": "boot-1", "offset_lo_s": -60, "offset_hi_s": 60},
+  {"kind": "wildlife_gap", "id": "gap-C1-0803-0817", "camera_id": "C1", "start_at": "2026-11-22T08:03:00Z", "end_at": "2026-11-22T08:17:00Z"},
+  {"kind": "wildlife_frame", "id": "frame-F1", "camera_id": "C1", "species": "deer", "track_hint": "T1", "at": "2026-11-22T08:00:00Z", "quality": 0.9, "session": "boot-1"},
+  {"kind": "wildlife_frame", "id": "frame-F2", "camera_id": "C1", "species": "deer", "track_hint": "T1", "at": "2026-11-22T08:20:00Z", "quality": 0.88, "session": "boot-1"},
+  {"kind": "wildlife_frame", "id": "frame-F3", "camera_id": "C2", "species": "deer", "track_hint": "T1", "at": "2026-11-22T08:10:00Z", "quality": 0.91, "session": "boot-1"},
+  {"kind": "wildlife_frame", "id": "frame-F4", "camera_id": "C3", "species": "deer", "track_hint": "T1", "at": "2026-11-22T08:10:00Z", "quality": 0.86, "session": "boot-1"}
+]

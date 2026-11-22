@@ -19,9 +19,14 @@ CREATE TABLE IF NOT EXISTS field_challenge(source_id TEXT PRIMARY KEY REFERENCES
 CREATE TABLE IF NOT EXISTS challenge_state(challenge_id TEXT PRIMARY KEY,request_id TEXT NOT NULL,risk_source_id TEXT NOT NULL,status TEXT NOT NULL,version INTEGER NOT NULL);
 CREATE TABLE IF NOT EXISTS access_state(request_id TEXT PRIMARY KEY,status TEXT NOT NULL,reason TEXT NOT NULL,version INTEGER NOT NULL);
 CREATE TABLE IF NOT EXISTS decision_log(id INTEGER PRIMARY KEY,system TEXT NOT NULL,object_id TEXT NOT NULL,status TEXT NOT NULL,reason TEXT NOT NULL,source_id TEXT NOT NULL,at TEXT DEFAULT CURRENT_TIMESTAMP);
-CREATE TABLE IF NOT EXISTS wildlife_camera(id TEXT PRIMARY KEY,block_id TEXT NOT NULL,x_km REAL NOT NULL,y_km REAL NOT NULL,source_id TEXT NOT NULL REFERENCES source(id));
-CREATE TABLE IF NOT EXISTS wildlife_frame(source_id TEXT PRIMARY KEY REFERENCES source(id),camera_id TEXT NOT NULL REFERENCES wildlife_camera(id),species TEXT NOT NULL,track_hint TEXT NOT NULL,at TEXT NOT NULL,quality REAL NOT NULL);
+CREATE TABLE IF NOT EXISTS wildlife_camera(id TEXT PRIMARY KEY,block_id TEXT NOT NULL,x_km REAL NOT NULL,y_km REAL NOT NULL,coverage_km REAL NOT NULL DEFAULT 0.05,source_id TEXT NOT NULL REFERENCES source(id));
+CREATE TABLE IF NOT EXISTS wildlife_frame(source_id TEXT PRIMARY KEY REFERENCES source(id),camera_id TEXT NOT NULL REFERENCES wildlife_camera(id),species TEXT NOT NULL,track_hint TEXT NOT NULL,at TEXT NOT NULL,quality REAL NOT NULL,session TEXT NOT NULL DEFAULT 'default');
 CREATE TABLE IF NOT EXISTS wildlife_count(block_id TEXT NOT NULL,species TEXT NOT NULL,count INTEGER NOT NULL,PRIMARY KEY(block_id,species));
+CREATE TABLE IF NOT EXISTS wildlife_clock(source_id TEXT PRIMARY KEY REFERENCES source(id),camera_id TEXT NOT NULL REFERENCES wildlife_camera(id),session TEXT NOT NULL,offset_lo_s REAL NOT NULL,offset_hi_s REAL NOT NULL,UNIQUE(camera_id,session));
+CREATE TABLE IF NOT EXISTS wildlife_gap(source_id TEXT PRIMARY KEY REFERENCES source(id),camera_id TEXT NOT NULL REFERENCES wildlife_camera(id),start_at TEXT NOT NULL,end_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS wildlife_media(source_id TEXT PRIMARY KEY REFERENCES source(id),frame_id TEXT NOT NULL REFERENCES wildlife_frame(source_id),media_kind TEXT NOT NULL,sha TEXT NOT NULL,shot_at TEXT NOT NULL,mark TEXT,archive_ref TEXT);
+CREATE TABLE IF NOT EXISTS wildlife_cosighting(source_id TEXT NOT NULL REFERENCES source(id),frame_id TEXT NOT NULL REFERENCES wildlife_frame(source_id),cameras TEXT NOT NULL,valid_from TEXT NOT NULL,valid_to TEXT NOT NULL,PRIMARY KEY(source_id,frame_id));
+CREATE TABLE IF NOT EXISTS wildlife_assessment(source_id TEXT PRIMARY KEY REFERENCES source(id),block_id TEXT NOT NULL,species TEXT NOT NULL,season TEXT NOT NULL,version INTEGER NOT NULL,lower_count INTEGER NOT NULL,upper_count INTEGER NOT NULL,lower_assignment TEXT NOT NULL,upper_assignment TEXT NOT NULL,evidence TEXT NOT NULL,UNIQUE(block_id,species,season,version));
 '''
 
 def connect(path):
@@ -51,4 +56,7 @@ def report(db_path):
           'rechecks':'SELECT * FROM access_recheck ORDER BY source_id','challenges':'SELECT * FROM field_challenge ORDER BY source_id','challenge_states':'SELECT * FROM challenge_state ORDER BY challenge_id',
           'wildlife_cameras':'SELECT * FROM wildlife_camera ORDER BY id','wildlife_frames':'SELECT * FROM wildlife_frame ORDER BY source_id',
           'wildlife_counts':'SELECT * FROM wildlife_count ORDER BY block_id,species',
+          'wildlife_clocks':'SELECT * FROM wildlife_clock ORDER BY source_id','wildlife_gaps':'SELECT * FROM wildlife_gap ORDER BY source_id',
+          'wildlife_media':'SELECT * FROM wildlife_media ORDER BY source_id','wildlife_cosightings':'SELECT * FROM wildlife_cosighting ORDER BY source_id,frame_id',
+          'wildlife_assessments':'SELECT * FROM wildlife_assessment ORDER BY block_id,species,season,version',
           'decisions':'SELECT * FROM decision_log ORDER BY id'}.items()}

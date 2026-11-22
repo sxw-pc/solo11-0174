@@ -8,10 +8,12 @@ def import_camera(db_path, file):
         doc, fresh = source(db, file, 'wildlife_camera')
         if not fresh:
             return {'id': doc['id'], 'replayed': True}
-        if not doc['block_id'] or not doc['camera_id']:
+        coverage = doc.get('coverage_km', 0.05)
+        if (not doc['block_id'] or not doc['camera_id']
+                or not isinstance(coverage, (int, float)) or isinstance(coverage, bool) or coverage < 0):
             raise ValueError('invalid_camera')
-        db.execute('INSERT INTO wildlife_camera VALUES(?,?,?,?,?)',
-                   (doc['camera_id'], doc['block_id'], doc['x_km'], doc['y_km'], doc['id']))
+        db.execute('INSERT INTO wildlife_camera VALUES(?,?,?,?,?,?)',
+                   (doc['camera_id'], doc['block_id'], doc['x_km'], doc['y_km'], coverage, doc['id']))
         return {'camera_id': doc['camera_id']}
 
 
@@ -24,9 +26,12 @@ def import_frame(db_path, file):
                             (doc['camera_id'],)).fetchone()
         if camera is None or not doc['track_hint'] or not 0 <= doc['quality'] <= 1:
             raise ValueError('invalid_frame')
-        db.execute('INSERT INTO wildlife_frame VALUES(?,?,?,?,?,?)',
+        if db.execute('SELECT 1 FROM wildlife_gap WHERE camera_id=? AND start_at<=? AND end_at>?',
+                      (doc['camera_id'], doc['at'], doc['at'])).fetchone():
+            raise ValueError('frame_in_camera_gap')
+        db.execute('INSERT INTO wildlife_frame VALUES(?,?,?,?,?,?,?)',
                    (doc['id'], doc['camera_id'], doc['species'], doc['track_hint'],
-                    doc['at'], doc['quality']))
+                    doc['at'], doc['quality'], doc.get('session') or 'default'))
         count = db.execute('''SELECT COUNT(DISTINCT f.camera_id||':'||f.track_hint)
             FROM wildlife_frame f JOIN wildlife_camera c ON c.id=f.camera_id
             WHERE c.block_id=? AND f.species=?''', (camera['block_id'], doc['species'])).fetchone()[0]

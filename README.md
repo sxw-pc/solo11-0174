@@ -27,4 +27,10 @@ python scripts/demo.py
 
 另一条跨账复现：在仅导入 `station-ok.json`、`risk-ok.json`、`access-ok.json` 的新库中，顺序执行 `field-challenge --file fixtures/field-a.json` 和 `field-challenge --file fixtures/field-b.json`。第一次为待第二份证据，第二次冻结风险及许可；`report` 可查看两个现场样本、异议状态和历史裁定。
 
+## 鹿群相机陷阱个体数
+
+`wildlife-camera-import`/`wildlife-frame-import` 登记相机林班、坐标、覆盖半径与帧（物种、局部 track_hint、时刻、质量、开机段），并按 `camera_id:track_hint` 去重形成临时计数 `wildlife_count`；track_hint 只在单机内部有意义，该计数只是原采录投影。`wildlife-clock-import` 记录整段开机共用的时钟偏差区间（同一开机段所有帧共用一个偏移，不能逐张调钟）；`wildlife-gap-import` 记录断档窗口，落在断档内的帧被拒绝；`wildlife-media-import` 把归档 RAW 原图/视频的 SHA-256、归档位与可辨外观标记（耳缺口、鹿角）挂到原帧，来源时刻不闭合的标记不生效；`wildlife-cosighting-import` 记录下轮双机同步重叠视场建立的跨机同现约束，只约束列出的新帧，不倒填旧季。
+
+`wildlife-assessment-publish` 在给定相机范围、季度与最大移动速度下，先把多帧归一为局部轨迹，再枚举候选同一性：合并必须同时满足共用时钟偏差下的速度可达、不可同时出现在两处、外观标记不冲突，且合并关系全局传递一致，不做逐对贪心。证据不足时按 （林班， 物种， 季度） 追加版本发布 [下界， 上界] 及各自对应的完整可行个体分配；补录证据只产生新版本，旧季报与临时计数从不改写。`fixtures/deer-cross-camera.json` 是文档数组（逐条经对应命令导入），复现 C1(0,0) 08:00/08:20 与 C2(2,0) 08:10 的同龄无标记鹿：同一组观测同时支持 1 只（往返）与 2 只（留守+经过）两个世界；另放 C3(50,0) 同时刻远端帧可检验全局合并不会拼出瞬移鹿。`tests/test_individuals.py` 覆盖两条合法补证路径：归档 RAW 耳缺口把旧季上界缩到 1（只覆盖 C1 时 C2 仍留范围），或历史 RAW 损坏后下轮双机同步只约束新季同现个体。
+
 当前只有离线林班与单机 SQLite，见证人与作业员只是 fixture 身份，不提供真实签名和现场控制。跨林场蔓延、卫星热点、航空巡护及人员撤离均未实现。
