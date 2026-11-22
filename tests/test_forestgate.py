@@ -1,7 +1,7 @@
 import json,subprocess,sys
 from pathlib import Path
 import pytest
-from forestgate.risk import import_risk
+from forestgate.risk import import_risk as _import_risk,import_station,revoke_station
 from forestgate.patrol import import_patrol
 from forestgate.access import import_access,recheck_access
 from forestgate.store import report,connect
@@ -10,8 +10,13 @@ from forestgate.audit import audit
 def fixture(tmp,name,doc):
     file=tmp/name;file.write_text(json.dumps(doc),encoding='utf8');return file
 
+def import_risk(db,file):
+    station=fixture(file.parent,'station.json',{'id':'station-1','kind':'station','cert_id':'S1-C1','block_id':'B1','station':'S1','valid_from':'2026-01-01T00:00:00Z','valid_to':'2027-01-01T00:00:00Z'})
+    import_station(db,station)
+    return _import_risk(db,file)
+
 def risk(id='r1',level='low',seq=1,**changes):
-    result=dict(id=id,kind='risk',block_id='B1',area='north',station='S1',seq=seq,level=level,station_valid=True,dry_a=35,dry_b=36,sample_a='A',sample_b='B');result.update(changes);return result
+    result=dict(id=id,kind='risk',block_id='B1',area='north',station='S1',cert_id='S1-C1',observed_at='2026-11-01T08:00:00Z',seq=seq,level=level,station_valid=True,dry_a=35,dry_b=36,sample_a='A',sample_b='B');result.update(changes);return result
 
 def patrol(id,kind,event='F1',**changes):
     result=dict(id=id,kind='patrol',block_id='B1',area='north',event_id=event,action=kind,actor='guard-a',witness='guard-b',at='2026-11-01T10:00:00Z');result.update(changes);return result
@@ -49,10 +54,13 @@ def test_duplicate_risk_revision_rejected_atomically(tmp_path):
     db=tmp_path/'x.db';import_risk(db,fixture(tmp_path,'low.json',risk()))
     with pytest.raises(ValueError,match='risk_revision_conflict'):
         import_risk(db,fixture(tmp_path,'other.json',risk(id='r2',level='high')))
-    with connect(db) as con:assert con.execute('SELECT COUNT(*) FROM source').fetchone()[0]==1
+    with connect(db) as con:assert con.execute('SELECT COUNT(*) FROM source').fetchone()[0]==2
 
 def test_public_cli(tmp_path):
     db=tmp_path/'cli.db';file=fixture(tmp_path,'low.json',risk())
+    station=fixture(tmp_path,'station.json',{'id':'station-1','kind':'station','cert_id':'S1-C1','block_id':'B1','station':'S1','valid_from':'2026-01-01T00:00:00Z','valid_to':'2027-01-01T00:00:00Z'})
+    prior=subprocess.run([sys.executable,'-m','forestgate','station-import','--db',str(db),'--file',str(station)],capture_output=True,text=True)
+    assert prior.returncode==0,prior.stderr
     cmd=[sys.executable,'-m','forestgate','risk-import','--db',str(db),'--file',str(file)]
     run=subprocess.run(cmd,capture_output=True,text=True)
     assert run.returncode==0,run.stderr
@@ -71,7 +79,16 @@ def test_fire_witness_not_independent_rolls_back(tmp_path):
     db=tmp_path/'x.db';import_risk(db,fixture(tmp_path,'risk.json',risk()))
     with pytest.raises(ValueError,match='witness_not_independent'):
         import_patrol(db,fixture(tmp_path,'bad.json',patrol('p1','sighting',witness='guard-a')))
-    with connect(db) as con:assert con.execute('SELECT COUNT(*) FROM source').fetchone()[0]==1
+    with connect(db) as con:assert con.execute('SELECT COUNT(*) FROM source').fetchone()[0]==2
+
+def test_station_revocation_reopens_risk_and_holds_permit(tmp_path):
+    db=tmp_path/'x.db';import_risk(db,fixture(tmp_path,'risk.json',risk()))
+    import_access(db,fixture(tmp_path,'access.json',access()))
+    result=revoke_station(db,fixture(tmp_path,'revoke.json',{'id':'station-revoke-1','kind':'station_revoke','cert_id':'S1-C1'}))
+    assert result['status']=='revoked'
+    assert report(db)['blocks'][0]['current_risk']=='unknown'
+    assert report(db)['access'][0]['status']=='held'
+    assert audit(db)['status']=='matched'
 
 def test_reopen_fire_after_close_resuspends_existing_permit(tmp_path):
     db=tmp_path/'x.db';import_risk(db,fixture(tmp_path,'risk.json',risk()))

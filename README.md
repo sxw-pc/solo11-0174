@@ -4,6 +4,7 @@
 
 ```powershell
 python -m pip install . --no-deps --no-build-isolation
+python -m forestgate station-import --db demo.sqlite --file fixtures/station-ok.json
 python -m forestgate risk-import --db demo.sqlite --file fixtures/risk-ok.json
 python -m forestgate access-import --db demo.sqlite --file fixtures/access-ok.json
 python -m forestgate patrol-import --db demo.sqlite --file fixtures/patrol-ok.json

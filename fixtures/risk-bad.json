@@ -1,1 +1,1 @@
-{"id":"risk-3","kind":"risk","block_id":"B1","area":"north","station":"S1","seq":3,"level":"high","station_valid":false,"dry_a":80,"dry_b":81,"sample_a":"A","sample_b":"B"}
+{"id":"risk-3","kind":"risk","block_id":"B1","area":"north","station":"S1","cert_id":"S1-C1","observed_at":"2026-11-01T10:00:00Z","seq":3,"level":"high","station_valid":false,"dry_a":80,"dry_b":81,"sample_a":"A","sample_b":"B"}
