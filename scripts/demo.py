@@ -1,8 +1,12 @@
 """Run three cross-ledger paths against a disposable local evidence book."""
 import json
+import sys
 import tempfile
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+import forestgate
 from forestgate.access import import_access, import_field_challenge
 from forestgate.audit import audit
 from forestgate.risk import import_risk, import_station
@@ -25,7 +29,7 @@ def main():
         assert second['status'] == 'confirmed_discrepancy'
         assert held['status'] == 'held'
         assert replay['status'] == 'matched'
-        print(json.dumps({'grant': granted['status'], 'challenge': second['status'],
+        print(json.dumps({'module_file': forestgate.__file__, 'grant': granted['status'], 'challenge': second['status'],
                           'after_challenge': held['status'], 'audit': replay}, ensure_ascii=False))
 
 
