@@ -1,6 +1,10 @@
 from .store import connect,log,source
 from contextlib import closing
 
+def shift_coverage(db,block_id,at):
+    """Shifts whose window actually contains the moment; an expired shift is never a dispatched team."""
+    return db.execute('SELECT * FROM patrol_shift WHERE block_id=? AND start_at<=? AND end_at>? ORDER BY id',(block_id,at,at)).fetchall()
+
 def import_shift(db_path,file):
     with closing(connect(db_path)) as db,db:
         doc,fresh=source(db,file,'shift')

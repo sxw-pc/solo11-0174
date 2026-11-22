@@ -20,8 +20,17 @@ CREATE TABLE IF NOT EXISTS challenge_state(challenge_id TEXT PRIMARY KEY,request
 CREATE TABLE IF NOT EXISTS access_state(request_id TEXT PRIMARY KEY,status TEXT NOT NULL,reason TEXT NOT NULL,version INTEGER NOT NULL);
 CREATE TABLE IF NOT EXISTS decision_log(id INTEGER PRIMARY KEY,system TEXT NOT NULL,object_id TEXT NOT NULL,status TEXT NOT NULL,reason TEXT NOT NULL,source_id TEXT NOT NULL,at TEXT DEFAULT CURRENT_TIMESTAMP);
 CREATE TABLE IF NOT EXISTS lightning_receiver(id TEXT PRIMARY KEY,x_km REAL NOT NULL,y_km REAL NOT NULL,clock_offset_us REAL NOT NULL,source_id TEXT NOT NULL REFERENCES source(id));
-CREATE TABLE IF NOT EXISTS lightning_pulse(source_id TEXT PRIMARY KEY REFERENCES source(id),burst_id TEXT NOT NULL,receiver_id TEXT NOT NULL REFERENCES lightning_receiver(id),arrival_us REAL NOT NULL,amplitude REAL NOT NULL);
+CREATE TABLE IF NOT EXISTS lightning_pulse(source_id TEXT PRIMARY KEY REFERENCES source(id),burst_id TEXT,receiver_id TEXT NOT NULL REFERENCES lightning_receiver(id),arrival_us REAL NOT NULL,amplitude REAL NOT NULL,boot_id TEXT,page_seq INTEGER,waveform TEXT);
 CREATE TABLE IF NOT EXISTS lightning_locate(burst_id TEXT PRIMARY KEY,x_km REAL NOT NULL,y_km REAL NOT NULL,method TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS lightning_site(id TEXT PRIMARY KEY,coord_version TEXT NOT NULL,time_unit TEXT NOT NULL,speed_km_per_us REAL NOT NULL,source_id TEXT NOT NULL REFERENCES source(id));
+CREATE TABLE IF NOT EXISTS lightning_clock(source_id TEXT PRIMARY KEY REFERENCES source(id),receiver_id TEXT NOT NULL,boot_id TEXT NOT NULL,clock_source TEXT NOT NULL,offset_us REAL NOT NULL,uncertainty_us REAL NOT NULL,boot_started_at TEXT NOT NULL,evidence TEXT NOT NULL DEFAULT '',version INTEGER NOT NULL,UNIQUE(receiver_id,boot_id,version));
+CREATE TABLE IF NOT EXISTS lightning_compartment(id TEXT PRIMARY KEY,block_id TEXT NOT NULL,polygon TEXT NOT NULL,source_id TEXT NOT NULL REFERENCES source(id));
+CREATE TABLE IF NOT EXISTS lightning_event(id TEXT PRIMARY KEY,seq INTEGER NOT NULL UNIQUE,status TEXT NOT NULL,receiver_count INTEGER NOT NULL);
+CREATE TABLE IF NOT EXISTS lightning_event_pulse(event_id TEXT NOT NULL REFERENCES lightning_event(id),pulse_source_id TEXT PRIMARY KEY REFERENCES lightning_pulse(source_id),receiver_id TEXT NOT NULL,boot_id TEXT NOT NULL,arrival_us REAL NOT NULL);
+CREATE TABLE IF NOT EXISTS lightning_release(id TEXT PRIMARY KEY,version INTEGER NOT NULL UNIQUE,source_id TEXT NOT NULL REFERENCES source(id),coord_version TEXT NOT NULL,time_unit TEXT NOT NULL,speed_km_per_us REAL NOT NULL,events_total INTEGER NOT NULL,unverified_events INTEGER NOT NULL,pending_compartments TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS lightning_release_event(release_id TEXT NOT NULL REFERENCES lightning_release(id),event_id TEXT NOT NULL,status TEXT NOT NULL,event_time TEXT,own_compartments TEXT NOT NULL,pending_compartments TEXT NOT NULL,joint_delta_us TEXT NOT NULL,own_delta_us TEXT NOT NULL,PRIMARY KEY(release_id,event_id));
+CREATE TABLE IF NOT EXISTS lightning_release_compartment(release_id TEXT NOT NULL REFERENCES lightning_release(id),event_id TEXT NOT NULL,compartment_id TEXT NOT NULL,block_id TEXT NOT NULL,coverage TEXT NOT NULL,shift_id TEXT,team TEXT,PRIMARY KEY(release_id,event_id,compartment_id));
+CREATE TABLE IF NOT EXISTS lightning_release_todo(release_id TEXT NOT NULL REFERENCES lightning_release(id),event_id TEXT NOT NULL,compartment_id TEXT NOT NULL,block_id TEXT NOT NULL,reason TEXT NOT NULL,PRIMARY KEY(release_id,event_id,compartment_id));
 '''
 
 def connect(path):
@@ -51,4 +60,11 @@ def report(db_path):
           'rechecks':'SELECT * FROM access_recheck ORDER BY source_id','challenges':'SELECT * FROM field_challenge ORDER BY source_id','challenge_states':'SELECT * FROM challenge_state ORDER BY challenge_id',
           'lightning_receivers':'SELECT * FROM lightning_receiver ORDER BY id','lightning_pulses':'SELECT * FROM lightning_pulse ORDER BY source_id',
           'lightning_locations':'SELECT * FROM lightning_locate ORDER BY burst_id',
+          'lightning_sites':'SELECT * FROM lightning_site ORDER BY id','lightning_clocks':'SELECT * FROM lightning_clock ORDER BY source_id',
+          'lightning_compartments':'SELECT * FROM lightning_compartment ORDER BY id','lightning_events':'SELECT * FROM lightning_event ORDER BY seq',
+          'lightning_event_pulses':'SELECT * FROM lightning_event_pulse ORDER BY event_id, pulse_source_id',
+          'lightning_releases':'SELECT * FROM lightning_release ORDER BY version',
+          'lightning_release_events':'SELECT * FROM lightning_release_event ORDER BY release_id, event_id',
+          'lightning_release_compartments':'SELECT * FROM lightning_release_compartment ORDER BY release_id, event_id, compartment_id',
+          'lightning_release_todos':'SELECT * FROM lightning_release_todo ORDER BY release_id, event_id, compartment_id',
           'decisions':'SELECT * FROM decision_log ORDER BY id'}.items()}
