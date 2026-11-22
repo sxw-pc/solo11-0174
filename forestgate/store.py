@@ -19,6 +19,8 @@ CREATE TABLE IF NOT EXISTS field_challenge(source_id TEXT PRIMARY KEY REFERENCES
 CREATE TABLE IF NOT EXISTS challenge_state(challenge_id TEXT PRIMARY KEY,request_id TEXT NOT NULL,risk_source_id TEXT NOT NULL,status TEXT NOT NULL,version INTEGER NOT NULL);
 CREATE TABLE IF NOT EXISTS access_state(request_id TEXT PRIMARY KEY,status TEXT NOT NULL,reason TEXT NOT NULL,version INTEGER NOT NULL);
 CREATE TABLE IF NOT EXISTS decision_log(id INTEGER PRIMARY KEY,system TEXT NOT NULL,object_id TEXT NOT NULL,status TEXT NOT NULL,reason TEXT NOT NULL,source_id TEXT NOT NULL,at TEXT DEFAULT CURRENT_TIMESTAMP);
+CREATE TABLE IF NOT EXISTS fuel_signature(id TEXT PRIMARY KEY,material TEXT NOT NULL,bands TEXT NOT NULL,source_id TEXT NOT NULL REFERENCES source(id));
+CREATE TABLE IF NOT EXISTS fuel_scan(source_id TEXT PRIMARY KEY REFERENCES source(id),block_id TEXT NOT NULL,bands TEXT NOT NULL,material TEXT NOT NULL,distance INTEGER NOT NULL);
 '''
 
 def connect(path):
@@ -46,4 +48,6 @@ def report(db_path):
           'samples':'SELECT * FROM risk_sample ORDER BY source_id','conflicts':'SELECT * FROM risk_conflict ORDER BY source_id',
           'fires':'SELECT * FROM fire_state ORDER BY event_id','shifts':'SELECT * FROM patrol_shift ORDER BY id','access':'SELECT * FROM access_state ORDER BY request_id',
           'rechecks':'SELECT * FROM access_recheck ORDER BY source_id','challenges':'SELECT * FROM field_challenge ORDER BY source_id','challenge_states':'SELECT * FROM challenge_state ORDER BY challenge_id',
-          'decisions':'SELECT * FROM decision_log ORDER BY id'}.items()}
+          'decisions':'SELECT * FROM decision_log ORDER BY id',
+          'fuel_signatures':'SELECT * FROM fuel_signature ORDER BY id',
+          'fuel_scans':'SELECT * FROM fuel_scan ORDER BY source_id'}.items()}
