@@ -16,6 +16,7 @@ python -m forestgate patrol-import --db demo.sqlite --file fixtures/patrol-close
 python -m forestgate audit --db demo.sqlite
 python -m forestgate report --db demo.sqlite
 python -m pytest -q
+python scripts/demo.py
 ```
 
 三账有独立命令与持久表：`forest_block/risk_observation/risk_sample/risk_conflict/station_cert` 保存林班、风险版次、双人取样、同版次冲突和站点资格；`patrol_shift/fire_event/fire_state` 保存巡护班次、见证和火源事件；`access_request/access_recheck/access_state` 保存作业申请、降险后复核和当前许可。高火险观测把原来准许的许可转为暂停；独立火源上报也会暂停同林班许可，异班次双人见证关闭后才能恢复。当前风险所用站点证书被撤销时，许可转为待核；撤销未用证书不会改写当前结论。
