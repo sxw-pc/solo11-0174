@@ -20,7 +20,13 @@ CREATE TABLE IF NOT EXISTS challenge_state(challenge_id TEXT PRIMARY KEY,request
 CREATE TABLE IF NOT EXISTS access_state(request_id TEXT PRIMARY KEY,status TEXT NOT NULL,reason TEXT NOT NULL,version INTEGER NOT NULL);
 CREATE TABLE IF NOT EXISTS decision_log(id INTEGER PRIMARY KEY,system TEXT NOT NULL,object_id TEXT NOT NULL,status TEXT NOT NULL,reason TEXT NOT NULL,source_id TEXT NOT NULL,at TEXT DEFAULT CURRENT_TIMESTAMP);
 CREATE TABLE IF NOT EXISTS fuel_depot(id TEXT PRIMARY KEY,block_id TEXT NOT NULL,capacity_l INTEGER NOT NULL,stock_l INTEGER NOT NULL,source_id TEXT NOT NULL REFERENCES source(id));
-CREATE TABLE IF NOT EXISTS fuel_mission(id TEXT PRIMARY KEY,block_id TEXT NOT NULL,depot_id TEXT NOT NULL,need_l INTEGER NOT NULL,status TEXT NOT NULL,source_id TEXT NOT NULL REFERENCES source(id));
+CREATE TABLE IF NOT EXISTS fuel_mission(id TEXT PRIMARY KEY,block_id TEXT NOT NULL,depot_id TEXT NOT NULL,need_l INTEGER NOT NULL,status TEXT NOT NULL,source_id TEXT NOT NULL REFERENCES source(id),reserved_at TEXT,dip_id TEXT);
+CREATE TABLE IF NOT EXISTS tank_geometry(id TEXT PRIMARY KEY,depot_id TEXT NOT NULL UNIQUE,length_m REAL NOT NULL,width_m REAL NOT NULL,height_m REAL NOT NULL,dead_m REAL NOT NULL,slope_min REAL NOT NULL,slope_max REAL NOT NULL,source_id TEXT NOT NULL REFERENCES source(id));
+CREATE TABLE IF NOT EXISTS tank_dip(id TEXT PRIMARY KEY,depot_id TEXT NOT NULL,epoch TEXT NOT NULL,observed_at TEXT NOT NULL,head_depth_m REAL NOT NULL,depth_error_m REAL NOT NULL,source_id TEXT NOT NULL REFERENCES source(id));
+CREATE TABLE IF NOT EXISTS tank_tilt(source_id TEXT PRIMARY KEY,depot_id TEXT NOT NULL,epoch TEXT NOT NULL,observed_at TEXT NOT NULL,slope REAL NOT NULL,slope_error_m REAL NOT NULL);
+CREATE TABLE IF NOT EXISTS level_transfer(source_id TEXT PRIMARY KEY,depot_id TEXT NOT NULL,epoch TEXT NOT NULL,observed_at TEXT NOT NULL,extractable_l INTEGER NOT NULL,metre_error_m REAL NOT NULL);
+CREATE TABLE IF NOT EXISTS dip_corroboration(id INTEGER PRIMARY KEY AUTOINCREMENT,dip_id TEXT NOT NULL,version INTEGER NOT NULL,kind TEXT NOT NULL,slope REAL,attitude_source_id TEXT,gross_low_l REAL NOT NULL,gross_high_l REAL NOT NULL,extractable_low_l REAL NOT NULL,extractable_high_l REAL NOT NULL,source_id TEXT NOT NULL REFERENCES source(id),UNIQUE(dip_id,version));
+CREATE TABLE IF NOT EXISTS fuel_mission_revision(id INTEGER PRIMARY KEY AUTOINCREMENT,mission_id TEXT NOT NULL,version INTEGER NOT NULL,status TEXT NOT NULL,shortfall_l INTEGER,evidence_kind TEXT NOT NULL,evidence_source_id TEXT NOT NULL REFERENCES source(id),at TEXT NOT NULL,UNIQUE(mission_id,version));
 '''
 
 def connect(path):
@@ -50,4 +56,10 @@ def report(db_path):
           'rechecks':'SELECT * FROM access_recheck ORDER BY source_id','challenges':'SELECT * FROM field_challenge ORDER BY source_id','challenge_states':'SELECT * FROM challenge_state ORDER BY challenge_id',
           'decisions':'SELECT * FROM decision_log ORDER BY id',
           'fuel_depots':'SELECT * FROM fuel_depot ORDER BY id',
-          'fuel_missions':'SELECT * FROM fuel_mission ORDER BY id'}.items()}
+          'fuel_missions':'SELECT * FROM fuel_mission ORDER BY id',
+          'tank_geometry':'SELECT * FROM tank_geometry ORDER BY id',
+          'tank_dips':'SELECT * FROM tank_dip ORDER BY id',
+          'tank_tilts':'SELECT * FROM tank_tilt ORDER BY source_id',
+          'level_transfers':'SELECT * FROM level_transfer ORDER BY source_id',
+          'dip_corroborations':'SELECT * FROM dip_corroboration ORDER BY id',
+          'fuel_mission_revisions':'SELECT * FROM fuel_mission_revision ORDER BY id'}.items()}

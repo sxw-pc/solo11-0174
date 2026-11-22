@@ -1,0 +1,47 @@
+{
+  "kind": "evidence_batch",
+  "id": "tilted-depot-batch-1",
+  "items": [
+    {
+      "kind": "fuel_depot",
+      "id": "src-fd1-declaration",
+      "depot_id": "FD1",
+      "block_id": "B1",
+      "capacity_l": 1200,
+      "stock_l": 1000
+    },
+    {
+      "kind": "tank_geometry",
+      "id": "src-fd1-geometry",
+      "geometry_id": "TG1",
+      "depot_id": "FD1",
+      "block_id": "B1",
+      "length_m": 2.0,
+      "width_m": 1.0,
+      "height_m": 0.6,
+      "dead_m": 0.01,
+      "slope_band": [-0.1, 0.1]
+    },
+    {
+      "kind": "tank_dip",
+      "id": "src-fd1-dip-1",
+      "dip_id": "DIP1",
+      "depot_id": "FD1",
+      "block_id": "B1",
+      "epoch": "legs-1",
+      "observed_at": "2026-11-20T08:00:00Z",
+      "head_depth_m": 0.3,
+      "depth_error_m": 0.0
+    },
+    {
+      "kind": "fuel_mission",
+      "id": "src-fm1",
+      "mission_id": "FM1",
+      "block_id": "B1",
+      "depot_id": "FD1",
+      "need_l": 800,
+      "reserved_at": "2026-11-20T09:00:00Z",
+      "dip_id": "DIP1"
+    }
+  ]
+}
