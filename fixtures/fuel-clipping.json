@@ -1,0 +1,36 @@
+{
+  "kind": "clipping_evidence",
+  "id": "clipping-source-1",
+  "mixture_id": "fuel-mixture-source-1",
+  "protocol": "fixed-area harvest and gravimetric dry weight, two independent crews",
+  "cells": [
+    {
+      "plot_id": "P1",
+      "clipped_area_m2": "2",
+      "weighings": [
+        {"team": "crew-alpha", "dry_mass_kg": "0.30"},
+        {"team": "crew-beta", "dry_mass_kg": "0.32"}
+      ],
+      "agreement_tolerance": "0.05"
+    },
+    {
+      "plot_id": "P2",
+      "clipped_area_m2": "2",
+      "weighings": [
+        {"team": "crew-alpha", "dry_mass_kg": "0.40"},
+        {"team": "crew-beta", "dry_mass_kg": "0.43"}
+      ],
+      "agreement_tolerance": "0.08"
+    },
+    {
+      "plot_id": "P4",
+      "clipped_area_m2": "2",
+      "weighings": [
+        {"team": "crew-alpha", "dry_mass_kg": "0.70"},
+        {"team": "crew-beta", "dry_mass_kg": "0.73"}
+      ],
+      "agreement_tolerance": "0.06"
+    }
+  ],
+  "note": "three representative cells carry high-confidence dry weight; the other cells and the whole transect are not extrapolated"
+}

@@ -21,6 +21,10 @@ CREATE TABLE IF NOT EXISTS access_state(request_id TEXT PRIMARY KEY,status TEXT 
 CREATE TABLE IF NOT EXISTS decision_log(id INTEGER PRIMARY KEY,system TEXT NOT NULL,object_id TEXT NOT NULL,status TEXT NOT NULL,reason TEXT NOT NULL,source_id TEXT NOT NULL,at TEXT DEFAULT CURRENT_TIMESTAMP);
 CREATE TABLE IF NOT EXISTS fuel_signature(id TEXT PRIMARY KEY,material TEXT NOT NULL,bands TEXT NOT NULL,source_id TEXT NOT NULL REFERENCES source(id));
 CREATE TABLE IF NOT EXISTS fuel_scan(source_id TEXT PRIMARY KEY REFERENCES source(id),block_id TEXT NOT NULL,bands TEXT NOT NULL,material TEXT NOT NULL,distance INTEGER NOT NULL);
+CREATE TABLE IF NOT EXISTS fuel_mixture(source_id TEXT PRIMARY KEY REFERENCES source(id),block_id TEXT NOT NULL,doc TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS fuel_evidence(source_id TEXT PRIMARY KEY REFERENCES source(id),mixture_id TEXT NOT NULL,kind TEXT NOT NULL,doc TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS unmix_plot(source_id TEXT NOT NULL REFERENCES source(id),stage TEXT NOT NULL,plot_id TEXT NOT NULL,area_m2 TEXT NOT NULL,fraction_interval TEXT NOT NULL,mass_interval_kg TEXT NOT NULL,shade_interval TEXT NOT NULL,residual_interval TEXT NOT NULL,identifiable INTEGER NOT NULL,severe_shade INTEGER NOT NULL,non_identifiable_materials TEXT NOT NULL,PRIMARY KEY(source_id,stage,plot_id));
+CREATE TABLE IF NOT EXISTS unmix_block(source_id TEXT NOT NULL,stage TEXT NOT NULL,block_id TEXT NOT NULL,materials TEXT NOT NULL,non_identifiable_signatures TEXT NOT NULL,group_mass_interval_kg TEXT NOT NULL,joint_min_total_residual TEXT NOT NULL,calibration_bias_interval TEXT NOT NULL,block_area_m2 TEXT NOT NULL,sampled_area_m2 TEXT NOT NULL,unsampled_area_m2 TEXT NOT NULL,sampled_fuel_load_interval_kg TEXT NOT NULL,load_per_sampled_m2_interval TEXT NOT NULL,coverage TEXT NOT NULL,precision_guard TEXT NOT NULL,PRIMARY KEY(source_id,stage));
 '''
 
 def connect(path):
@@ -50,4 +54,8 @@ def report(db_path):
           'rechecks':'SELECT * FROM access_recheck ORDER BY source_id','challenges':'SELECT * FROM field_challenge ORDER BY source_id','challenge_states':'SELECT * FROM challenge_state ORDER BY challenge_id',
           'decisions':'SELECT * FROM decision_log ORDER BY id',
           'fuel_signatures':'SELECT * FROM fuel_signature ORDER BY id',
-          'fuel_scans':'SELECT * FROM fuel_scan ORDER BY source_id'}.items()}
+          'fuel_scans':'SELECT * FROM fuel_scan ORDER BY source_id',
+          'fuel_mixtures':'SELECT * FROM fuel_mixture ORDER BY source_id',
+          'fuel_evidence':'SELECT * FROM fuel_evidence ORDER BY source_id',
+          'unmix_plots':'SELECT * FROM unmix_plot ORDER BY source_id,stage,plot_id',
+          'unmix_blocks':'SELECT * FROM unmix_block ORDER BY source_id,stage'}.items()}

@@ -27,4 +27,23 @@ python scripts/demo.py
 
 另一条跨账复现：在仅导入 `station-ok.json`、`risk-ok.json`、`access-ok.json` 的新库中，顺序执行 `field-challenge --file fixtures/field-a.json` 和 `field-challenge --file fixtures/field-b.json`。第一次为待第二份证据，第二次冻结风险及许可；`report` 可查看两个现场样本、异议状态和历史裁定。
 
+## 混合像元可燃物解混（可行区间，不给虚假精确百分比）
+
+旧的三波段单材分类保留为原始采录结果（`signature-import`/`fuel-scan`，最近绝对距离 + material/distance），新分析不覆写它。真实像元同时含松针、草、湿土和遮阴，多个组成可解释同一观测，因此 `forestgate/unmix.py` 不返回点估计，而是对整条样带建立**一个联合线性规划**（`forestgate/lp.py`，纯标准库、精确有理数两阶段单纯形），给出可证明的上下界：
+
+```powershell
+python -m forestgate mixture-import  --db demo.sqlite --file fixtures/fuel-mixture.json
+python -m forestgate band4-import    --db demo.sqlite --file fixtures/fuel-band4.json
+python -m forestgate clipping-import --db demo.sqlite --file fixtures/fuel-clipping.json
+python -m forestgate audit --db demo.sqlite
+```
+
+三条不可合并的结构性事实被显式建模而非隐藏：
+
+- **材料不可辨识**：当某参考光谱落在其他参考的凸包内（fixture 中湿叶 `[5.5,4,3.5]` 恰好是松针 `[4,6,2]` 与草 `[7,2,5]` 各半），100% 湿叶与松针/草各半都满足零残差，却对应不同干燃料质量。逐点 NNLS 会把待核区间压成一个假点；区间优化保留完整可行域，并在 `non_identifiable_signatures` 点名依赖关系。
+- **共享校准偏差**：整条样带共用一次仪器校准，模型对每个波段只有一个偏差变量并在所有样方上联合约束，样方不能各自挑选有利校正；`calibration_bias_interval` 是同一份一致偏差的界。
+- **覆盖范围分离**：地面割取只证明被割格子内的干重，`coverage` 把连续覆盖面积、已确证干重、已确证面积和待复采格子分开报告，已测干重绝不外推到未采样区域或整片林班；`block_load_conservative` 给林班负荷保守界，未采样面积在没有物理密度上限时不臆造上界。
+
+经规程批准的两条追加采样路线从同一三波段观测起步、互不混用，各自改变不同部分：第四波段（`fuel-band4.json`）在非遮阴格子取得连续混合比例并缩小区间，但重遮阴格仍留区间、留在复采清单，且光学证据永不替代干重；双人定面积实物割取（`fuel-clipping.json`，两队称重超差即拒绝）只在三个代表格形成高可信干重，未覆盖格仍待估。两条路线的可报告连续覆盖面积、已确证干重和待复采格子均不同。原始来源字节、三阶段分析与旧单材分类都在 SQLite 中可追溯，`audit` 重放并逐投影比对。
+
 当前只有离线林班与单机 SQLite，见证人与作业员只是 fixture 身份，不提供真实签名和现场控制。跨林场蔓延、卫星热点、航空巡护及人员撤离均未实现。

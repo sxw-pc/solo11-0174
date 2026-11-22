@@ -1,0 +1,22 @@
+{
+  "kind": "band4_evidence",
+  "id": "band4-source-1",
+  "mixture_id": "fuel-mixture-source-1",
+  "calibration": {
+    "calibration_id": "calib-2026-11-band4",
+    "bias_bounds": {"lower": "-0.3", "upper": "0.3"}
+  },
+  "signatures": [
+    {"material": "pine_litter", "band4": "3"},
+    {"material": "grass", "band4": "8"},
+    {"material": "wet_leaf", "band4": "6.5"}
+  ],
+  "plots": [
+    {"plot_id": "P1", "bands": [null, null, null, "6.5"], "band4_error": "0.1"},
+    {"plot_id": "P2", "bands": [null, null, null, "4.5"], "band4_error": "0.1"},
+    {"plot_id": "P3", "bands": [null, null, null, "4.0"], "band4_error": "0.1"},
+    {"plot_id": "P4", "bands": [null, null, null, "6.5"], "band4_error": "0.1"},
+    {"plot_id": "P5", "bands": [null, null, null, "6.0"], "band4_error": "0.1"}
+  ],
+  "note": "extra band separates wet_leaf (6.5) from pine(3)/grass(8); shade-severe P4/P5 keep three-band intervals"
+}

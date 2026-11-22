@@ -8,6 +8,7 @@ from .patrol import import_patrol,import_shift
 from .access import import_access,recheck_access,import_field_challenge
 from .spectra import import_signature
 from .scan import import_scan
+from .unmix import import_mixture, import_band4, import_clipping
 
 def audit(db_path):
     with closing(connect(db_path)) as db:
@@ -19,8 +20,8 @@ def audit(db_path):
         rebuilt=Path(folder)/'replay.sqlite'
         for i,item in enumerate(sources):
             file=Path(folder)/f'{i}.json';file.write_bytes(item['raw'])
-            {'station':import_station,'station_revoke':revoke_station,'risk':import_risk,'sample':import_sample,'shift':import_shift,'patrol':import_patrol,'access':import_access,'recheck':recheck_access,'field_challenge':import_field_challenge,'signature':import_signature,'fuel_scan':import_scan}[item['kind']](rebuilt,file)
+            {'station':import_station,'station_revoke':revoke_station,'risk':import_risk,'sample':import_sample,'shift':import_shift,'patrol':import_patrol,'access':import_access,'recheck':recheck_access,'field_challenge':import_field_challenge,'signature':import_signature,'fuel_scan':import_scan,'fuel_mixture':import_mixture,'band4_evidence':import_band4,'clipping_evidence':import_clipping}[item['kind']](rebuilt,file)
         replay=report(rebuilt)
-    fields=('blocks','stations','risk','samples','conflicts','shifts','fires','access','rechecks','challenges','challenge_states','fuel_signatures','fuel_scans')
+    fields=('blocks','stations','risk','samples','conflicts','shifts','fires','access','rechecks','challenges','challenge_states','fuel_signatures','fuel_scans','fuel_mixtures','fuel_evidence','unmix_plots','unmix_blocks')
     return {'status':'matched' if all(original[k]==replay[k] for k in fields) else 'divergent',
             'source_count':len(sources),'differences':[k for k in fields if original[k]!=replay[k]]}

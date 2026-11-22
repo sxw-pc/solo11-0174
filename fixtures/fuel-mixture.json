@@ -1,0 +1,58 @@
+{
+  "kind": "fuel_mixture",
+  "id": "fuel-mixture-source-1",
+  "block_id": "B7",
+  "block_area_m2": "10000",
+  "severe_shade_threshold": "0.2",
+  "calibration": {
+    "calibration_id": "calib-2026-11",
+    "bands": ["b1", "b2", "b3"],
+    "bias_bounds": {
+      "lower": ["-0.5", "-0.5", "-0.5"],
+      "upper": ["0.5", "0.5", "0.5"]
+    },
+    "note": "one handheld instrument calibration shared by every plot of the transect"
+  },
+  "signatures": [
+    {"material": "pine_litter", "bands": ["4", "6", "2"], "dry_mass_per_m2": "0.6"},
+    {"material": "grass", "bands": ["7", "2", "5"], "dry_mass_per_m2": "0.25"},
+    {"material": "wet_leaf", "bands": ["5.5", "4", "3.5"], "dry_mass_per_m2": "0.15"}
+  ],
+  "plots": [
+    {
+      "plot_id": "P1",
+      "area_m2": "10",
+      "bands": ["5.5", "4", "3.5"],
+      "band_error": ["0.2", "0.2", "0.2"],
+      "shade": {"fraction": "0", "tolerance": "0"}
+    },
+    {
+      "plot_id": "P2",
+      "area_m2": "10",
+      "bands": ["5.5", "4", "3.5"],
+      "band_error": ["0.2", "0.2", "0.2"],
+      "shade": {"fraction": "0.1", "tolerance": "0.05"}
+    },
+    {
+      "plot_id": "P3",
+      "area_m2": "10",
+      "bands": ["4.6", "5.2", "2.6"],
+      "band_error": ["0.2", "0.2", "0.2"],
+      "shade": {"fraction": "0.1", "tolerance": "0.05"}
+    },
+    {
+      "plot_id": "P4",
+      "area_m2": "10",
+      "bands": ["2.8", "4.2", "1.4"],
+      "band_error": ["0.2", "0.2", "0.2"],
+      "shade": {"fraction": "0.3", "tolerance": "0.05"}
+    },
+    {
+      "plot_id": "P5",
+      "area_m2": "10",
+      "bands": ["4.9", "1.4", "3.5"],
+      "band_error": ["0.2", "0.2", "0.2"],
+      "shade": {"fraction": "0.3", "tolerance": "0.05"}
+    }
+  ]
+}
