@@ -1,0 +1,125 @@
+{
+  "kind": "saline_nursery_bundle",
+  "id": "saline-nursery",
+  "description": "Synthetic saline-season nursery. Single-frequency C=W+S with C=50 is consistent with state A (W=20,S=30, dry) and state B (W=40,S=10, wet). P1 and P2 share calibration batch CB-1 whose salt offset is a single batch-wide value in [10,30]; tank T-600 holds 600 litres. The dual-frequency scan covers three of four 25 m2 cells per plot and leaves the shaded ridge cell uncovered. The oven-dry sample is an alternative route that fixes only one 1 m2 grid cell of P1.",
+  "docs": [
+    {
+      "kind": "nursery_plot",
+      "id": "plot-P1",
+      "plot_id": "P1",
+      "block_id": "B1",
+      "area_m2": 100
+    },
+    {
+      "kind": "nursery_plot",
+      "id": "plot-P2",
+      "plot_id": "P2",
+      "block_id": "B1",
+      "area_m2": 100
+    },
+    {
+      "kind": "calibration_batch",
+      "id": "cal-CB1",
+      "batch_id": "CB-1",
+      "offset_min": 10,
+      "offset_max": 30,
+      "salt_curve": "additive_c_equals_w_plus_s"
+    },
+    {
+      "kind": "probe",
+      "id": "probe-Q1",
+      "probe_id": "Q1",
+      "plot_id": "P1",
+      "frequency_hz": 70000000,
+      "temperature_c": 18.5,
+      "batch_id": "CB-1",
+      "salt_curve": "additive_c_equals_w_plus_s"
+    },
+    {
+      "kind": "probe",
+      "id": "probe-Q2",
+      "probe_id": "Q2",
+      "plot_id": "P2",
+      "frequency_hz": 70000000,
+      "temperature_c": 18.7,
+      "batch_id": "CB-1",
+      "salt_curve": "additive_c_equals_w_plus_s"
+    },
+    {
+      "kind": "soil_reading",
+      "id": "reading-P1",
+      "plot_id": "P1",
+      "at": "2026-11-22T08:00:00Z",
+      "capacitance": 50
+    },
+    {
+      "kind": "soil_reading",
+      "id": "reading-P2",
+      "plot_id": "P2",
+      "at": "2026-11-22T08:00:00Z",
+      "capacitance": 50
+    },
+    {
+      "kind": "water_tank",
+      "id": "tank-T600",
+      "tank_id": "T-600",
+      "capacity_liters": 600,
+      "remaining_liters": 600,
+      "served_plots": ["P1", "P2"]
+    },
+    {
+      "kind": "water_tank",
+      "id": "tank-T300",
+      "tank_id": "T-300",
+      "capacity_liters": 300,
+      "remaining_liters": 300,
+      "served_plots": ["P1", "P2"]
+    },
+    {
+      "kind": "dual_frequency_scan",
+      "id": "scan-full",
+      "scan_id": "SC-1",
+      "actor": "mobile-dual-frequency-crew",
+      "observed_at": "2026-11-22T09:30:00Z",
+      "cells": [
+        {"plot_id": "P1", "cell_id": "P1-c1", "reading_source_id": "reading-P1",
+         "area_m2": 25, "bounds_m2": [[0, 0], [5, 0], [5, 5], [0, 5]],
+         "covered": true, "response_d": -10},
+        {"plot_id": "P1", "cell_id": "P1-c2", "reading_source_id": "reading-P1",
+         "area_m2": 25, "bounds_m2": [[5, 0], [10, 0], [10, 5], [5, 5]],
+         "covered": true, "response_d": -10},
+        {"plot_id": "P1", "cell_id": "P1-c3", "reading_source_id": "reading-P1",
+         "area_m2": 25, "bounds_m2": [[0, 5], [5, 5], [5, 10], [0, 10]],
+         "covered": true, "response_d": -10},
+        {"plot_id": "P1", "cell_id": "P1-shaded-ridge", "reading_source_id": "reading-P1",
+         "area_m2": 25, "bounds_m2": [[5, 5], [10, 5], [10, 10], [5, 10]],
+         "covered": false, "response_d": null},
+        {"plot_id": "P2", "cell_id": "P2-c1", "reading_source_id": "reading-P2",
+         "area_m2": 25, "bounds_m2": [[0, 0], [5, 0], [5, 5], [0, 5]],
+         "covered": true, "response_d": -10},
+        {"plot_id": "P2", "cell_id": "P2-c2", "reading_source_id": "reading-P2",
+         "area_m2": 25, "bounds_m2": [[5, 0], [10, 0], [10, 5], [5, 5]],
+         "covered": true, "response_d": -10},
+        {"plot_id": "P2", "cell_id": "P2-c3", "reading_source_id": "reading-P2",
+         "area_m2": 25, "bounds_m2": [[0, 5], [5, 5], [5, 10], [0, 10]],
+         "covered": true, "response_d": -10},
+        {"plot_id": "P2", "cell_id": "P2-shaded-ridge", "reading_source_id": "reading-P2",
+         "area_m2": 25, "bounds_m2": [[5, 5], [10, 5], [10, 10], [5, 10]],
+         "covered": false, "response_d": null}
+      ]
+    },
+    {
+      "kind": "soil_sample",
+      "id": "sample-P1-grid",
+      "sample_id": "SM-1",
+      "plot_id": "P1",
+      "cell_id": "P1-grid-0-0",
+      "area_m2": 1,
+      "bounds_m2": [[0, 0], [1, 0], [1, 1], [0, 1]],
+      "water_pct": 20,
+      "method": "oven_dry",
+      "actor": "independent-sampler",
+      "observed_at": "2026-11-22T10:15:00Z"
+    }
+  ]
+}

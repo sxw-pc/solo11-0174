@@ -1,4 +1,12 @@
-"""Baseline nursery advice treats raw capacitance as water percentage."""
+"""Legacy capacitance-only nursery advice (original ingestion projection).
+
+This projection deliberately treats raw capacitance as if it were the water
+percentage and compares it directly with 30.  During saline seasons C = W + S,
+so the number is also driven by salt and this advice is provisional.  It is
+kept unchanged so the original single-frequency intake stays reproducible; the
+feasible-range and valve-planning logic lives in ``moisture_bounds`` and is
+stored in separate versioned tables that never overwrite this projection.
+"""
 
 
 def advise(db, plot_id):

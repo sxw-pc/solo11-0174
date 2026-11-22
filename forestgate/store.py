@@ -22,6 +22,17 @@ CREATE TABLE IF NOT EXISTS decision_log(id INTEGER PRIMARY KEY,system TEXT NOT N
 CREATE TABLE IF NOT EXISTS nursery_plot(id TEXT PRIMARY KEY,block_id TEXT NOT NULL,area_m2 REAL NOT NULL,source_id TEXT NOT NULL REFERENCES source(id));
 CREATE TABLE IF NOT EXISTS soil_reading(source_id TEXT PRIMARY KEY REFERENCES source(id),plot_id TEXT NOT NULL REFERENCES nursery_plot(id),at TEXT NOT NULL,capacitance REAL NOT NULL);
 CREATE TABLE IF NOT EXISTS irrigation_advice(plot_id TEXT PRIMARY KEY,liters REAL NOT NULL,reason TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS calibration_batch(batch_id TEXT PRIMARY KEY,offset_min REAL NOT NULL,offset_max REAL NOT NULL,salt_curve TEXT NOT NULL,source_id TEXT NOT NULL REFERENCES source(id));
+CREATE TABLE IF NOT EXISTS probe(probe_id TEXT PRIMARY KEY,plot_id TEXT NOT NULL REFERENCES nursery_plot(id),frequency_hz REAL NOT NULL,temperature_c REAL NOT NULL,batch_id TEXT NOT NULL REFERENCES calibration_batch(batch_id),salt_curve TEXT NOT NULL,source_id TEXT NOT NULL REFERENCES source(id));
+CREATE TABLE IF NOT EXISTS water_tank(tank_id TEXT PRIMARY KEY,capacity_liters REAL NOT NULL,remaining_liters REAL NOT NULL,served_plots TEXT NOT NULL,source_id TEXT NOT NULL REFERENCES source(id));
+CREATE TABLE IF NOT EXISTS dual_frequency_scan(source_id TEXT PRIMARY KEY REFERENCES source(id),scan_id TEXT NOT NULL,actor TEXT NOT NULL,observed_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS dual_frequency_cell(source_id TEXT NOT NULL REFERENCES source(id),plot_id TEXT NOT NULL,reading_source_id TEXT NOT NULL REFERENCES soil_reading(source_id),cell_id TEXT NOT NULL,area_m2 REAL NOT NULL,response_d REAL,covered INTEGER NOT NULL,PRIMARY KEY(source_id,cell_id));
+CREATE TABLE IF NOT EXISTS soil_sample(source_id TEXT PRIMARY KEY REFERENCES source(id),sample_id TEXT NOT NULL,plot_id TEXT NOT NULL REFERENCES nursery_plot(id),cell_id TEXT NOT NULL UNIQUE,area_m2 REAL NOT NULL,bounds_m2 TEXT NOT NULL,water_pct REAL NOT NULL,actor TEXT NOT NULL,observed_at TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS moisture_plan(plan_id TEXT NOT NULL,version INTEGER NOT NULL,tank_id TEXT NOT NULL,tank_remaining_liters REAL NOT NULL,total_scheduled_liters REAL NOT NULL,max_state_demand_liters REAL NOT NULL,tank_shortfall_liters REAL NOT NULL,status TEXT NOT NULL,evidence_source_ids TEXT NOT NULL,created_at TEXT NOT NULL,PRIMARY KEY(plan_id,version));
+CREATE TABLE IF NOT EXISTS plan_plot(plan_id TEXT NOT NULL,version INTEGER NOT NULL,plot_id TEXT NOT NULL,area_m2 REAL NOT NULL,w_min REAL,w_max REAL,demand_min_liters REAL NOT NULL,demand_max_liters REAL NOT NULL,safe_liters REAL NOT NULL,scheduled_liters REAL NOT NULL,confirmed_area_m2 REAL NOT NULL,pending_area_m2 REAL NOT NULL,status TEXT NOT NULL,evidence_source_ids TEXT NOT NULL,PRIMARY KEY(plan_id,version,plot_id));
+CREATE TABLE IF NOT EXISTS plan_cell(plan_id TEXT NOT NULL,version INTEGER NOT NULL,plot_id TEXT NOT NULL,cell_id TEXT NOT NULL,area_m2 REAL NOT NULL,coverage TEXT NOT NULL,w_min REAL,w_max REAL,safe_liters REAL NOT NULL,scheduled_liters REAL NOT NULL,status TEXT NOT NULL,evidence_source_id TEXT,PRIMARY KEY(plan_id,version,plot_id,cell_id));
+CREATE TABLE IF NOT EXISTS valve_action(plan_id TEXT NOT NULL,version INTEGER NOT NULL,plot_id TEXT NOT NULL,cell_id TEXT NOT NULL,liters REAL NOT NULL,classification TEXT NOT NULL,reason TEXT NOT NULL,PRIMARY KEY(plan_id,version,plot_id,cell_id));
+CREATE TABLE IF NOT EXISTS plan_joint_state(plan_id TEXT NOT NULL,version INTEGER NOT NULL,state_seq INTEGER NOT NULL,label TEXT NOT NULL,offsets TEXT NOT NULL,plot_demands TEXT NOT NULL,total_demand_liters REAL NOT NULL,fits_tank INTEGER NOT NULL,PRIMARY KEY(plan_id,version,state_seq));
 '''
 
 def connect(path):
@@ -51,4 +62,12 @@ def report(db_path):
           'rechecks':'SELECT * FROM access_recheck ORDER BY source_id','challenges':'SELECT * FROM field_challenge ORDER BY source_id','challenge_states':'SELECT * FROM challenge_state ORDER BY challenge_id',
           'nursery_plots':'SELECT * FROM nursery_plot ORDER BY id','soil_readings':'SELECT * FROM soil_reading ORDER BY source_id',
           'irrigation_advice':'SELECT * FROM irrigation_advice ORDER BY plot_id',
+          'calibration_batches':'SELECT * FROM calibration_batch ORDER BY batch_id','probes':'SELECT * FROM probe ORDER BY probe_id',
+          'water_tanks':'SELECT * FROM water_tank ORDER BY tank_id','dual_frequency_scans':'SELECT * FROM dual_frequency_scan ORDER BY source_id',
+          'dual_frequency_cells':'SELECT * FROM dual_frequency_cell ORDER BY source_id,cell_id',
+          'soil_samples':'SELECT * FROM soil_sample ORDER BY source_id',
+          'moisture_plans':'SELECT * FROM moisture_plan ORDER BY plan_id,version','plan_plots':'SELECT * FROM plan_plot ORDER BY plan_id,version,plot_id',
+          'plan_cells':'SELECT * FROM plan_cell ORDER BY plan_id,version,plot_id,cell_id',
+          'valve_actions':'SELECT * FROM valve_action ORDER BY plan_id,version,plot_id,cell_id',
+          'plan_joint_states':'SELECT * FROM plan_joint_state ORDER BY plan_id,version,state_seq',
           'decisions':'SELECT * FROM decision_log ORDER BY id'}.items()}
