@@ -1,1 +1,1 @@
-"""Offline forest fire access evidence ledger."""
+"""Offline forest fire access and pre-harvest timber volume evidence ledger."""

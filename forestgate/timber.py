@@ -1,4 +1,12 @@
-"""Baseline timber estimate assumes a flat ground datum of zero meters."""
+"""Legacy top-return estimate (method v1), preserved as the delivered harvest basis.
+
+It takes the highest return of a plot and assumes a flat ground datum of zero
+metres.  That single value was already delivered to the harvest team, so it
+is kept verbatim: later ground control points or stem surveys must not
+rewrite it.  Provable ground/canopy intervals live in stand_volume.py.
+"""
+
+METHOD = 'legacy-top-return-v1'
 
 
 def estimate(db, plot_id):

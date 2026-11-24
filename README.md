@@ -27,4 +27,13 @@ python scripts/demo.py
 
 另一条跨账复现：在仅导入 `station-ok.json`、`risk-ok.json`、`access-ok.json` 的新库中，顺序执行 `field-challenge --file fixtures/field-a.json` 和 `field-challenge --file fixtures/field-b.json`。第一次为待第二份证据，第二次冻结风险及许可；`report` 可查看两个现场样本、异议状态和历史裁定。
 
+## 采伐前蓄积区间（lidar / stand_volume）
+
+第四账处理无人机激光扫描的采伐前蓄积。`plot-import`/`return-import` 只保存样方面积与原始回波（beam、z、回波序号），回波顺序不做地面分类——坡面或低矮灌木可能占末回波。`timber.py` 保留旧版 top-return 单值估计（最高点减零米×面积×0.02）作为已交付采伐依据，后续控制点不得改写。`datum-import` 登记整次飞行共享的标高基准（地面下限与唯一偏置先验）；`control-import` 的 RTK 控制点联立约束这一个共享偏置并钉住本样方地面，互相矛盾的偏置或压在回波之下的地面会被拒绝；`stem-plot-import` 逐株登记胸径与树高，只确证定面积样地小格的实材积与树种，面积不得外推。`stand` 命令发布每个样方可证明的地面/冠层组合与蓄积区间：林班合计只由完整场景（一个共享偏置加每样方地面）取到界限并附见证场景，无冠层回波的漏扫带保持未测而不是零蓄积。`survey-import` 可一次导入 `fixtures/occluded-stand.json` 这样的整包调查，子文档各自登记哈希源；`audit` 重放覆盖全部新表。
+
+```powershell
+python -m forestgate survey-import --db demo.sqlite --file fixtures/occluded-stand.json
+python -m forestgate stand --db demo.sqlite --block B1
+```
+
 当前只有离线林班与单机 SQLite，见证人与作业员只是 fixture 身份，不提供真实签名和现场控制。跨林场蔓延、卫星热点、航空巡护及人员撤离均未实现。

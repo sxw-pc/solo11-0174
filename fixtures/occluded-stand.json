@@ -1,0 +1,47 @@
+{
+  "id": "occluded-stand-1",
+  "kind": "stand_survey",
+  "block_id": "B1",
+  "datum": {
+    "id": "datum-f1",
+    "kind": "flight_datum",
+    "flight_id": "F1",
+    "block_id": "B1",
+    "datum": "EGM2008-L",
+    "ground_floor_m": 0.0,
+    "bias_prior_m": 0.0,
+    "bias_tol_m": 2.0,
+    "flown_at": "2026-10-15T09:00:00Z"
+  },
+  "plots": [
+    {"id": "plot-p1", "kind": "lidar_plot", "plot_id": "P1", "block_id": "B1", "area_m2": 100},
+    {"id": "plot-p2", "kind": "lidar_plot", "plot_id": "P2", "block_id": "B1", "area_m2": 100},
+    {"id": "plot-p3", "kind": "lidar_plot", "plot_id": "P3", "block_id": "B1", "area_m2": 60}
+  ],
+  "returns": [
+    {"id": "ret-p1-l1", "kind": "lidar_return", "plot_id": "P1", "beam_id": "L1", "z_m": 30.0, "return_no": 1},
+    {"id": "ret-p2-l2a", "kind": "lidar_return", "plot_id": "P2", "beam_id": "L2", "z_m": 28.0, "return_no": 1},
+    {"id": "ret-p2-l2b", "kind": "lidar_return", "plot_id": "P2", "beam_id": "L2", "z_m": 8.0, "return_no": 2}
+  ],
+  "control_network": [
+    {"id": "gcp-1", "kind": "ground_control", "flight_id": "F1", "point_id": "GCP-1", "plot_id": "P1", "rtk_z_m": 10.0, "lidar_z_m": 12.0, "tol_m": 0.2},
+    {"id": "gcp-2", "kind": "ground_control", "flight_id": "F1", "point_id": "GCP-2", "plot_id": "P2", "rtk_z_m": 4.0, "lidar_z_m": 6.0, "tol_m": 0.2},
+    {"id": "gcp-3", "kind": "ground_control", "flight_id": "F1", "point_id": "GCP-3", "plot_id": "P3", "rtk_z_m": 6.0, "lidar_z_m": 8.0, "tol_m": 0.2}
+  ],
+  "stem_plots": [
+    {"id": "stem-s1", "kind": "stem_plot", "plot_id": "P1", "cell_id": "S1", "area_m2": 25, "measured_at": "2026-10-20T10:00:00Z",
+     "trees": [
+       {"tree_no": 1, "species": "spruce", "dbh_cm": 50, "height_m": 30.0},
+       {"tree_no": 2, "species": "spruce", "dbh_cm": 40, "height_m": 28.0}
+     ]},
+    {"id": "stem-s2", "kind": "stem_plot", "plot_id": "P1", "cell_id": "S2", "area_m2": 25, "measured_at": "2026-10-20T11:00:00Z",
+     "trees": [
+       {"tree_no": 1, "species": "pine", "dbh_cm": 60, "height_m": 32.0}
+     ]},
+    {"id": "stem-s3", "kind": "stem_plot", "plot_id": "P1", "cell_id": "S3", "area_m2": 25, "measured_at": "2026-10-20T12:00:00Z",
+     "trees": [
+       {"tree_no": 1, "species": "spruce", "dbh_cm": 45, "height_m": 29.0},
+       {"tree_no": 2, "species": "birch", "dbh_cm": 35, "height_m": 26.0}
+     ]}
+  ]
+}
